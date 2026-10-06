@@ -221,6 +221,26 @@ for subject_folder in subjects:
     np.savez_compressed(output_file_deactivation,resmat = right_maps,labels = np.array(LABELS))
     '''
 
+full_labels = ['Neutral',
+'Fear',
+'Anger',
+'Disgust',
+'Sadness',
+'Happiness',
+'Loneliness',
+'Anxiety',
+'Love',
+'Depression',
+'Pride',
+'Shame',
+'Jealousy',
+'Stress',
+'Migraine',
+'Nausea',
+'Irritation',
+'Lethargy']
+
+N=len(full_labels)
 
 #Add emotions you want to exclude
 exclude_labels=[]
