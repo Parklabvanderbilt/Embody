@@ -194,9 +194,11 @@ def reconstruct_subject(subject_folder, N):
 
     return resmat
 
-deleted_list = check_and_delete_incomplete_folders(basepath,N)
-for folder in deleted_list:
-    print(f"  - {folder}")
+def run(basepath,output_folder,N,include_indices,labels):
+
+    deleted_list = check_and_delete_incomplete_folders(basepath,N)
+    for folder in deleted_list:
+        print(f"  - {folder}")
 
 subjects = sorted(
     (
