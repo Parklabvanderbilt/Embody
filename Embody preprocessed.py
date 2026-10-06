@@ -221,3 +221,16 @@ for subject_folder in subjects:
     np.savez_compressed(output_file_deactivation,resmat = right_maps,labels = np.array(LABELS))
     '''
 
+
+#Add emotions you want to exclude
+exclude_labels=[]
+
+include_indices = [i for i, val in enumerate(full_labels) if val not in exclude_labels]
+
+labels = [full_labels[i] for i in include_indices]
+
+basepath = Path("/Users/bb/Documents/Park lab/Embody/Data/In person/All in-person data organized 9.16.26/Control/test")
+output_folder = Path("/Users/bb/Documents/Park lab/Embody/Preprocessed/test1")
+output_folder.mkdir(parents=True, exist_ok=True)
+
+run(basepath,output_folder,N,include_indices,labels)
