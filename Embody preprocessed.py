@@ -200,13 +200,11 @@ def run(basepath,output_folder,N,include_indices,labels):
     for folder in deleted_list:
         print(f"  - {folder}")
 
-subjects = sorted(
-    (
-        path for path in basepath.iterdir()
-        if path.is_dir() and not path.name.startswith(".")
-    ),
-    key=lambda path: int(path.name.split("_")[-1])
-)
+    subjects = sorted(
+        (
+            path for path in basepath.iterdir()
+            if path.is_dir() and not path.name.startswith(".")),
+        key=lambda path: int(path.name))
 
 for subject_folder in subjects:
     maps= reconstruct_subject(
