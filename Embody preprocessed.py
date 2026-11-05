@@ -5,6 +5,7 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 import os
 import shutil
+from send2trash import send2trash
 
 CANVAS_WIDTH = 900
 CANVAS_HEIGHT = 600
@@ -19,41 +20,43 @@ LEFT_X2 = 235
 RIGHT_X1 = 663
 RIGHT_X2 = 898
 
-def check_and_delete_incomplete_folders(parent_folder,N):
-
+def check_and_delete_incomplete_folders(parent_folder, N, dry_run=True):
     required_files = {f"{i}.csv" for i in range(N)}
 
     if not os.path.exists(parent_folder):
         print(f"Error: Parent folder '{parent_folder}' does not exist")
         return []
 
+    # Collect first, delete after, so we never modify the tree while walking it
+    to_delete = []
+    for root, dirs, files in os.walk(parent_folder):
+        if root == parent_folder:
+            continue  # never delete the parent itself
+
+        csv_files = {f for f in files if f.endswith(".csv")}
+        if not csv_files:
+            continue  # container folder or unrelated folder, skip
+
+        missing_files = required_files - csv_files
+        if missing_files:
+            print(f"'{root}' is missing: {sorted(missing_files)}")
+            to_delete.append(root)
+
     deleted_folders = []
+    for folder in to_delete:
+        if dry_run:
+            print(f"[dry run] Would delete: {folder}")
+            continue
+        try:
+            send2trash(folder)
+            print(f"Deleted: {folder}")
+            deleted_folders.append(folder)
+        except Exception as e:
+            print(f"Error deleting {folder}: {e}")
 
-    # Go through each item in the parent folder
-    for item in os.listdir(parent_folder):
-        item_path = os.path.join(parent_folder, item)
-
-        # Only check directories
-        if os.path.isdir(item_path):
-            # Get all CSV files in the subfolder
-            csv_files = {f for f in os.listdir(item_path) if f.endswith('.csv')}
-
-            # Check if all required files are present
-            missing_files = required_files - csv_files
-
-            if missing_files:
-                print(f"Subfolder '{item}' is missing: {sorted(missing_files)}")
-
-                try:
-                    shutil.rmtree(item_path)
-                    print(f"Deleted: {item_path}")
-                    deleted_folders.append(item_path)
-                except Exception as e:
-                    print(f"Error deleting {item_path}: {e}")
-
-    print(f"\nTotal folders deleted: {len(deleted_folders)}")
-
-    return deleted_folders
+    print(f"\nTotal folders {'flagged' if dry_run else 'deleted'}: "
+          f"{len(to_delete) if dry_run else len(deleted_folders)}")
+    return to_delete if dry_run else deleted_folders
 
 def load_subject(folder, N):
     all_paint = []
@@ -160,24 +163,10 @@ Change below
 ============================================================================
 '''
 
-full_labels = ['Neutral',
-'Fear',
-'Anger',
-'Disgust',
-'Sadness',
-'Happiness',
-'Loneliness',
-'Anxiety',
-'Love',
-'Depression',
-'Pride',
-'Shame',
-'Jealousy',
-'Stress',
-'Migraine',
-'Nausea',
-'Irritation',
-'Lethargy']
+full_labels = LABELS = [
+    "anger_m", "fear_l", "happy_m", "fear_m", "sad_l", "happy_l", "disgust_l",
+    "anxiety_l", "headache", "disgust_m", "anxiety_m", "sad_m", "anger_l","happiness"
+]
 
 N=len(full_labels)
 
@@ -188,8 +177,8 @@ include_indices = [i for i, val in enumerate(full_labels) if val not in exclude_
 
 labels = [full_labels[i] for i in include_indices]
 
-basepath = Path("/Users/bb/Documents/Park lab/Embody/Data/In person/All in-person data organized 9.16.26/Control/test")
-output_folder = Path("/Users/bb/Documents/Park lab/Embody/Preprocessed/test1")
+basepath = Path("/Users/hagrid/Desktop/ML/Embody/Data/All in-person data/Anne v5")
+output_folder = Path("/Users/hagrid/Desktop/ML/Embody/Preprocessed/")
 output_folder.mkdir(parents=True, exist_ok=True)
 
 run(basepath,output_folder,N,include_indices,labels)
